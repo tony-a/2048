@@ -7,6 +7,10 @@ class Game():
         """
         (row, column)
         """
+        if type(grid_size) != int or grid_size < 2:
+            print "Why are you doing this?"
+            grid_size = 4
+
         self.grid = {}
         for x in range(0, grid_size):
             for y in range(0, grid_size):
@@ -67,7 +71,7 @@ class Game():
 
         return new
 
-    def add_row(self, row):
+    def add_row(self, row, direction):
         a = 0
         b = 1
         new = []
@@ -87,31 +91,83 @@ class Game():
                     new.append(arr[a])
                 break
 
-        while len(new) < len(row):
-            new.append(0)
+        return self._pad_zeros(new, direction)
 
-        return new
+    def _pad_zeros(self, row, direction):
+        while len(row) < self.grid_size:
+            if direction == 'l':
+                row.append(0)
+            else:
+                row.insert(0, 0)
 
-    def rows(self):
-        for x in range(0, self.grid_size):
+        return row
+
+
+    def rows(self, transpose=False):
+        """
+        (row, column)
+        """
+        for row_index in range(0, self.grid_size):
             row = []
-            for y in range(0, self.grid_size):
-                row.append(self.grid[x, y])
+            for column_index in range(0, self.grid_size):
+                if transpose:
+                    row_index, column_index = column_index, row_index
+                row.append(self.grid[row_index, column_index])
             yield row
+
+    def columns(self):
+        for column_index in range(0, self.grid_size):
+            column = []
+            for row_index in range(0, self.grid_size):
+                column.append(self.grid[row_index, column_index])
+            yield column
 
     def swipe_left(self):
         new_grid = {}
         for row_index, row in enumerate(self.rows()):
-            added_row = self.add_row(row)
+            added_row = self.add_row(row, 'l')
             for x, value in enumerate(added_row):
                 new_grid[row_index, x] = value
 
-        # random_added = False
         if self.grid != new_grid:
             self.grid = new_grid
             self._add_random_value()
         
         return self
+
+    def swipe_right(self):
+        new_grid = {}
+        for row_index, row in enumerate(self.rows()):
+            added_row = self.add_row(row, 'r')
+            for x, value in enumerate(added_row):
+                new_grid[row_index, x] = value
+
+        if self.grid != new_grid:
+            self.grid = new_grid
+            self._add_random_value()
+        
+        return self
+
+    def swipe_up(self):
+        new_grid = {}
+        for row_index, row in enumerate(self.columns()):
+            added_row = self.add_row(row, 'l')
+            for x, value in enumerate(added_row):
+                new_grid[x, row_index] = value
+
+        if self.grid != new_grid:
+            self.grid = new_grid
+            self._add_random_value()
+        
+        return self
+
+"""
+reload(game)
+g = game.Game(4)
+g
+
+
+"""
 
 # x = [[2,2,0,4],[2,0,4,8],[0,0,2,4], [4,2,4,0]]
 # y = [[0,2,0,0],[2048,0,4,8],[128,64,2,4], [4,2,4,0]]
